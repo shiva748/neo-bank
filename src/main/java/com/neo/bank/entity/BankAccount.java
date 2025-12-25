@@ -1,7 +1,10 @@
 package com.neo.bank.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -25,7 +28,7 @@ public class BankAccount {
             id;
 
     @Column(nullable = false, unique = true, length = 20)
-    private String accountNumber;
+    private long accountNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -41,12 +44,15 @@ public class BankAccount {
     // Many bank accounts → one user
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
     private Users user;
 
     @Column(nullable = false, updatable = false)
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
+    @UpdateTimestamp
     private LocalDateTime updatedAt;
 
     @PrePersist
@@ -59,4 +65,13 @@ public class BankAccount {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    public boolean isValid() {
+        return
+                accountType != null
+                && balance != null
+                && balance.compareTo(BigDecimal.ZERO) >= 0
+                && status != null;
+    }
+
 }

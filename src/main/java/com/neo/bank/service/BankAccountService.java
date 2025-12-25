@@ -2,6 +2,7 @@ package com.neo.bank.service;
 
 import com.neo.bank.dto.ApiResponse;
 import com.neo.bank.dto.SimpleResponse;
+import com.neo.bank.entity.AccountStatus;
 import com.neo.bank.entity.BankAccount;
 import com.neo.bank.entity.Users;
 import com.neo.bank.repository.BankAccountRepo;
@@ -37,6 +38,26 @@ public class BankAccountService {
         }catch (Exception e){
             System.out.println(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new SimpleResponse(false, "Internal Server Error"));
+        }
+    }
+
+    public ResponseEntity<?> createAccount(Authentication authentication, BankAccount bankAccount) {
+        try {
+            String username = authentication.getName();
+            Optional<Users> user = Optional.ofNullable(userRepo.findByUsername(username));
+            if (!user.isPresent()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new SimpleResponse(false, "User not found"));
+            }
+            bankAccount.setAccountNumber((int) (Math.random()*1000000000));
+            bankAccount.setUser(user.get());
+            bankAccount.setStatus(AccountStatus.Active);
+            if(!bankAccount.isValid()){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new SimpleResponse(false, "Invalid Account"));
+            }
+            BankAccount account = bankAccountRepo.save(bankAccount);
+            return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("Account Created", true, account));
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new SimpleResponse(false, "Internal Server Error"));
         }
     }
 }
