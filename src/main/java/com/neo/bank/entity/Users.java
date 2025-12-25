@@ -1,5 +1,6 @@
 package com.neo.bank.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.*;
@@ -41,8 +42,10 @@ public class Users {
     @OneToMany(
             mappedBy = "user",
             cascade = CascadeType.ALL,
-            orphanRemoval = true
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
     )
+    @JsonIgnore
     private List<BankAccount> bankAccounts;
 
     public boolean isValid(){
