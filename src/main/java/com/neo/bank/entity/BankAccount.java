@@ -23,12 +23,14 @@ import java.util.UUID;
 public class BankAccount {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID
-            id;
-
-    @Column(nullable = false, unique = true, length = 20)
-    private long accountNumber;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "account_seq")
+    @SequenceGenerator(
+            name = "account_seq",
+            sequenceName = "account_number_seq",
+            initialValue = 1740000000,
+            allocationSize = 1
+    )
+    private Long accountNumber;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

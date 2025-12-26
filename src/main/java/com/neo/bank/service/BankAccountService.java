@@ -3,6 +3,7 @@ package com.neo.bank.service;
 import com.neo.bank.dto.ApiResponse;
 import com.neo.bank.dto.SimpleResponse;
 import com.neo.bank.entity.AccountStatus;
+import com.neo.bank.entity.AccountType;
 import com.neo.bank.entity.BankAccount;
 import com.neo.bank.entity.Users;
 import com.neo.bank.repository.BankAccountRepo;
@@ -48,11 +49,13 @@ public class BankAccountService {
             if (!user.isPresent()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new SimpleResponse(false, "User not found"));
             }
-            bankAccount.setAccountNumber((int) (Math.random()*1000000000));
             bankAccount.setUser(user.get());
             bankAccount.setStatus(AccountStatus.Active);
             if(!bankAccount.isValid()){
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new SimpleResponse(false, "Invalid Account"));
+            }
+            if(bankAccount.getAccountType() == AccountType.CURRENT && bankAccount.getBalance().longValue() < 10000){
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new SimpleResponse(false, "Minimum opening Balance for current account is 10000."));
             }
             BankAccount account = bankAccountRepo.save(bankAccount);
             return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse<>("Account Created", true, account));
@@ -60,4 +63,5 @@ public class BankAccountService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new SimpleResponse(false, "Internal Server Error"));
         }
     }
+
 }
